@@ -23,6 +23,11 @@ python3 -m venv .venv
 pip install -m requirements.py
 ```
 
+# Create a .env file and add your own key
+```yaml
+OPENAI_API_KEY=
+```
+
 
 # To run the code
 ```yaml
