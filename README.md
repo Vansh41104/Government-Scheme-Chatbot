@@ -1,3 +1,14 @@
+# Dependencies
+<ul>
+<li>Langchain</li>
+<li>PyPDF2</li>
+<li>python-dotenv</li>
+<li>openai</li>
+<li>faiss-cpu</li>
+<li>altair</li>
+<li>tiktoken</li>
+</ul>
+
 # Creating a Virtual Environment
 
 ```yaml
