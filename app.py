@@ -2,13 +2,14 @@ import streamlit as st
 from dotenv import load_dotenv
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_openai import OpenAIEmbeddings
+from langchain_community.embeddings import HuggingFaceInstructEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_community.callbacks import get_openai_callback
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain_openai import ChatOpenAI
+from langchain_openai import ChatOpenAI,OpenAIEmbeddings
 from htmlTemplates import css, bot_template, user_template
+from langchain_community.llms import Ollama, huggingface_hub
 
 def get_pdf_text(pdf_docs):
     text=""
@@ -33,11 +34,13 @@ def get_text_chunk(raw_text):
 
 def get_vectorstore(texts):
     embeddings = OpenAIEmbeddings()
+    # model = AutoModel.from_pretrained('jinaai/jina-embeddings-v2-base-en', trust_remote_code=True) 
+    # embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-large")
     vector_store = FAISS.from_texts(texts, embeddings)
     return vector_store
 
 def get_conversation_chain(store):
-    llm=ChatOpenAI(model_name="gpt-3.5-turbo")
+    llm=Ollama(model="llama3")
     memory=ConversationBufferMemory(memory_key="chat_history",return_messages=True)
     conversation_chain=ConversationalRetrievalChain.from_llm(
         llm=llm,
@@ -57,8 +60,7 @@ def handle_userinput(user_question):
             st.write(bot_template.replace("{{MSG}}",message.content), unsafe_allow_html=True)
 
 def main():
-    load_dotenv()
-    with get_openai_callback() as cb:
+        load_dotenv()
         st.set_page_config(
             page_title="Government Scheme Chatbot", 
             page_icon="🤖", 
@@ -73,7 +75,7 @@ def main():
         if "chat_history" not in st.session_state:
             st.session_state.chat_history = None
 
-        st.header("Government Scheme Chatbot")
+        st.header("Government Scheme Chatbot 🤖")
 
         user_question=st.text_input("Hello I am your personalised bot which will tell you about the government schemes which you would like to know about")
 
@@ -83,7 +85,7 @@ def main():
         with st.sidebar:
             st.subheader("About")
             pdf_docs = "Business & Entrepreneurship.pdf"
-            print("CREATING PDF")
+            print("READING PDF")
             raw_text=get_pdf_text(pdf_docs)
 
             print("CREATING CHUNKS")
@@ -94,7 +96,7 @@ def main():
                     
             print("CREATING CONVERSATION CHAIN")
             st.session_state.conversation=get_conversation_chain(vectorstore)
-            print(cb)
+            
 
 
 
