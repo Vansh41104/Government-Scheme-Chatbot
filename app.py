@@ -32,15 +32,24 @@ def get_text_chunk(raw_text):
     len(chunks)
     return chunks
 
-def get_vectorstore(texts):
+def get_vectorstore():
     embeddings = OpenAIEmbeddings()
     # model = AutoModel.from_pretrained('jinaai/jina-embeddings-v2-base-en', trust_remote_code=True) 
     # embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-large")
-    vector_store = FAISS.from_texts(texts, embeddings)
-    return vector_store
+    # vector_store = FAISS.from_texts(texts, embeddings)
+
+    # #Saving the vector store
+
+    # save_directory="vector"
+    # vector_store.save_local(save_directory)
+
+    #Loading the vector store
+
+    new_vector_store = FAISS.load_local("vector", embeddings, allow_dangerous_deserialization=True)
+    return new_vector_store
 
 def get_conversation_chain(store):
-    llm=Ollama(model="llama3")
+    llm=Ollama(model="llama3-gradient:1048k")
     memory=ConversationBufferMemory(memory_key="chat_history",return_messages=True)
     conversation_chain=ConversationalRetrievalChain.from_llm(
         llm=llm,
@@ -81,27 +90,20 @@ def main():
 
         if user_question:
             handle_userinput(user_question)
-       
-        with st.sidebar:
-            st.subheader("About")
-            pdf_docs = "Business & Entrepreneurship.pdf"
-            print("READING PDF")
-            raw_text=get_pdf_text(pdf_docs)
 
-            print("CREATING CHUNKS")
-            text_chunk = get_text_chunk(raw_text)
+        pdf_docs = "Business & Entrepreneurship.pdf"
+        # print("READING PDF")
+        # raw_text=get_pdf_text(pdf_docs)
 
-            print("CREATING VECTOR STORE")
-            vectorstore=get_vectorstore(text_chunk)
+        # print("CREATING CHUNKS")
+        # text_chunk = get_text_chunk(raw_text)
+
+        print("CREATING VECTOR STORE")
+        vectorstore=get_vectorstore()
+        print(vectorstore)
                     
-            print("CREATING CONVERSATION CHAIN")
-            st.session_state.conversation=get_conversation_chain(vectorstore)
+        print("CREATING CONVERSATION CHAIN")
+        st.session_state.conversation=get_conversation_chain(vectorstore)
             
-
-
-
-    
-
-
 if __name__ == '__main__':
     main()
