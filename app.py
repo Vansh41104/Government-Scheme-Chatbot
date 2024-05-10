@@ -49,7 +49,7 @@ def get_vectorstore():
     return new_vector_store
 
 def get_conversation_chain(store):
-    llm=Ollama(model="llama3-gradient:1048k")
+    llm=Ollama(model="phi3:3.8b")
     memory=ConversationBufferMemory(memory_key="chat_history",return_messages=True)
     conversation_chain=ConversationalRetrievalChain.from_llm(
         llm=llm,
