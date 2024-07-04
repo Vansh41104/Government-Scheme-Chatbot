@@ -4,9 +4,4 @@ python-dotenv
 faiss-cpu
 altair
 tiktoken
-<<<<<<< HEAD
 flask
-=======
-streamlit
-transformers
->>>>>>> 84256c640644bab5153a81d654b2f96a0b0aab2e
