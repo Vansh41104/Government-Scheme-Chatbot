@@ -35,8 +35,8 @@ def index():
 def get_answer():
     try:
         question = request.json['question']
-        formatted_question = prompt_template.format(question=question)
-        response = conversation_chain({"question": formatted_question})
+        prompted_question = prompt_template.format(question=question)
+        response = conversation_chain({"question": prompted_question})
         
         return jsonify({"answer": response['chat_history'][-1].content})
 
