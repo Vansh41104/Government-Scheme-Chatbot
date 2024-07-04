@@ -1,7 +1,7 @@
 Langchain
 PyPDF2
 python-dotenv
-openai
 faiss-cpu
 altair
 tiktoken
+flask
