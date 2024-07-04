@@ -45,6 +45,6 @@ Use the script below and access it in API environment
 ```yaml
 http://127.0.0.1:5000/get_answer
 {
-	"question": "Sample Question"
+"question": "Sample Question"
 }
 ```
