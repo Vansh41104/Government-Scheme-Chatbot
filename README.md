@@ -1,5 +1,5 @@
 # Government Scheme Chatbot
-This Chatbot analyses the government schemes and reply accordingly
+This Chatbot analyses the government schemes relates to Buisness and Entrepreneurship and reply accordingly
 # Dependencies
 <ul>
 <li>Langchain</li>
