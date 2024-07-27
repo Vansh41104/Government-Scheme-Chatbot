@@ -8,6 +8,7 @@ This Chatbot analyses the government schemes relates to Buisness and Entrepreneu
 <li>faiss-cpu</li>
 <li>altair</li>
 <li>tiktoken</li>
+<li>Openai</li>
 </ul>
 
 # Creating a Virtual Environment
@@ -25,7 +26,13 @@ ollama pull phi3:3.8b
 # Installing the dependencies
 Installing the required dependencies in the virtual environment
 ```yaml
-pip install -m requirements.py
+pip install -r requirements.txt
+
+```
+# create .env file in folder home directory and copy paste below key-value add your openai key below
+
+```yaml
+OPENAI_API_KEY=""
 ```
 
 # Creating the vector store

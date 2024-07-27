@@ -1,7 +1,10 @@
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.embeddings import HuggingFaceInstructEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # reading the text
 pdf_docs = "Business & Entrepreneurship.pdf"
@@ -22,7 +25,7 @@ text_splitter = CharacterTextSplitter(
 chunks = text_splitter.split_text(text)  # Changed from raw_text to text
 
 # creating the vector store
-embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-large")
+embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
 vector_store = FAISS.from_texts(chunks, embeddings)  # Changed from texts to chunks
 
 # saving the vector store

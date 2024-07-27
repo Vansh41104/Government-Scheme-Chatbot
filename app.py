@@ -1,13 +1,18 @@
 from flask import Flask, jsonify, request,render_template
 from langchain.chains import ConversationalRetrievalChain
-from langchain_community.embeddings import HuggingFaceInstructEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain.memory import ConversationBufferMemory
 from langchain_community.llms import Ollama
 from langchain_community.vectorstores import FAISS
 from langchain.prompts import PromptTemplate
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = Flask(__name__)
-embeddings = HuggingFaceInstructEmbeddings(model_name="hkunlp/instructor-large")
+
+embeddings = OpenAIEmbeddings(model="text-embedding-3-large")
+
 llm=Ollama(model="phi3:3.8b",)
 vector_store = FAISS.load_local("vector_store", embeddings, allow_dangerous_deserialization=True)
 

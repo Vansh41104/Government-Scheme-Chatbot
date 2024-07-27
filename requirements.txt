@@ -1,4 +1,5 @@
 Langchain
+Langchain_openai
 PyPDF2
 python-dotenv
 faiss-cpu
