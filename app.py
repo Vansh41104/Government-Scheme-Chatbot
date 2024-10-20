@@ -1,5 +1,4 @@
 import streamlit as st
-import os
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import FAISS
@@ -9,6 +8,7 @@ from langchain.llms import Ollama
 from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
 
+# Get PDF content as text
 def get_pdf_text(pdf_docs):
     text = ""
     pdf_reader = PdfReader(pdf_docs)
@@ -18,6 +18,7 @@ def get_pdf_text(pdf_docs):
             text += content
     return text
 
+# Split text into smaller chunks for vectorization
 def get_text_chunks(raw_text):
     text_splitter = CharacterTextSplitter(
         separator="\n",
@@ -25,14 +26,15 @@ def get_text_chunks(raw_text):
         chunk_overlap=300,
         length_function=len,
     )
-    chunks = text_splitter.split_text(raw_text)
-    return chunks
+    return text_splitter.split_text(raw_text)
 
+# Generate a vectorstore from text chunks
 def get_vectorstore(text_chunks):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
+# Create a conversational chain using the vectorstore and LLM
 def get_conversation_chain(vectorstore):
     llm = Ollama(model="qwen2.5:1.5b")
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
@@ -43,31 +45,20 @@ def get_conversation_chain(vectorstore):
     )
     return conversation_chain
 
-def process_pdf_and_create_vectorstore():
-    pdf_docs = "Business & Entrepreneurship.pdf"
-    raw_text = get_pdf_text(pdf_docs)
-    text_chunks = get_text_chunks(raw_text)
-    vectorstore = get_vectorstore(text_chunks)
-    
-    # Save the vectorstore
-    save_directory = "vector_store"
-    vectorstore.save_local(save_directory)
-    
-    return vectorstore
-
-def load_vectorstore():
-    save_directory = "vector_store"
-    embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    if os.path.exists(save_directory):
-        return FAISS.load_local(save_directory, embeddings, allow_dangerous_deserialization=True)
-    else:
-        return process_pdf_and_create_vectorstore()
-
+# Handle user input and display chat messages
 def handle_userinput(user_question):
-    if st.session_state.conversation is None:
-        st.error("Conversation not initialized. Please try refreshing the page.")
+    if st.session_state.vectorstore is None:
+        st.error("Vector store not initialized.")
         return
-
+    
+    # Process the user question as a new text chunk and update the vector store
+    user_text_chunks = get_text_chunks(user_question)
+    st.session_state.vectorstore = get_vectorstore(user_text_chunks)
+    
+    # Initialize a new conversation chain with updated vector store
+    st.session_state.conversation = get_conversation_chain(st.session_state.vectorstore)
+    
+    # Get response from the conversation
     response = st.session_state.conversation({'question': user_question})
     st.session_state.chat_history = response['chat_history']
     
@@ -77,18 +68,31 @@ def handle_userinput(user_question):
         else:
             st.write(bot_template.replace("{{MSG}}", message.content), unsafe_allow_html=True)
 
-def initialize_conversation():
-    vectorstore = load_vectorstore()
-    conversation = get_conversation_chain(vectorstore)
-    return conversation
+# Initialize the vectorstore from the PDF
+def initialize_vectorstore():
+    pdf_docs = "Business & Entrepreneurship.pdf"
+    
+    if not pdf_docs:
+        st.error(f"PDF file '{pdf_docs}' not found.")
+        return None
+    
+    raw_text = get_pdf_text(pdf_docs)
+    text_chunks = get_text_chunks(raw_text)
+    
+    # Create a vectorstore from the PDF text
+    return get_vectorstore(text_chunks)
 
+# Main function to initialize and run the chatbot
 def main():
     st.set_page_config(page_title="Government Scheme Chatbot", page_icon="🤖", layout="wide")
     st.write(css, unsafe_allow_html=True)
 
+    if "vectorstore" not in st.session_state:
+        with st.spinner("Initializing vector store from PDF..."):
+            st.session_state.vectorstore = initialize_vectorstore()
+
     if "conversation" not in st.session_state or st.session_state.conversation is None:
-        with st.spinner("Initializing the chatbot..."):
-            st.session_state.conversation = initialize_conversation()
+        st.session_state.conversation = None
     
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = None
@@ -100,5 +104,6 @@ def main():
     if user_question:
         handle_userinput(user_question)
 
+# Run the Streamlit app
 if __name__ == '__main__':
     main()
