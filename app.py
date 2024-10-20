@@ -2,12 +2,12 @@ import streamlit as st
 import os
 from PyPDF2 import PdfReader
 from langchain.text_splitter import CharacterTextSplitter
-from langchain_community.vectorstores import FAISS
+from langchain.vectorstores import FAISS
+from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.memory import ConversationBufferMemory
+from langchain.llms import Ollama
 from langchain.chains import ConversationalRetrievalChain
 from htmlTemplates import css, bot_template, user_template
-from langchain_community.llms import Ollama
-from langchain_community.embeddings import HuggingFaceEmbeddings
 
 def get_pdf_text(pdf_docs):
     text = ""
@@ -30,16 +30,16 @@ def get_text_chunks(raw_text):
 
 def get_vectorstore(text_chunks):
     embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    vectorstore = FAISS.from_texts(text_chunks, embeddings)
+    vectorstore = FAISS.from_texts(texts=text_chunks, embedding=embeddings)
     return vectorstore
 
 def get_conversation_chain(vectorstore):
-    llm = Ollama(model="phi3.5")
+    llm = Ollama(model="llama3.2:1b")
     memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
     conversation_chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
         retriever=vectorstore.as_retriever(),
-        memory=memory, 
+        memory=memory,
     )
     return conversation_chain
 
