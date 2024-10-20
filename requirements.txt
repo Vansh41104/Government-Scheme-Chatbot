@@ -1,8 +1,9 @@
 Langchain
-Langchain_openai
 PyPDF2
 python-dotenv
+openai
 faiss-cpu
 altair
 tiktoken
-flask
+streamlit
+Langchain_openai
